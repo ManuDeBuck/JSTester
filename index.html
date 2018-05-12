@@ -27,12 +27,6 @@
 </head>
 <body>
 <div class="container">
-    <h1>Javascript tester</h1>
-    <p>Deze - hoogstwaarschijnlijk buggevulde - webapplicatie maakt het mogelijk om tijdens het werken met javascript toch nog een Python "doctest" gevoel te krijgen. Dien in het inputfield je code zoals hieronder getoond in:</p>
-    <img src="voorbeeld.png"><p>Bron: dodona, Universiteit Gent, vak: Scriptingtalen, Prof. Dr. Peter Dawyndt</p>
-    <p>Klik vervolgens op de knop: GO, en copy-paste de resulterende code in je javascript code. Testen maar!</p>
-</div>
-<div class="container">
     <div class="row">
         <div class="col-sm-12">
             <textarea id="inputField" placeholder="Geef hier uw doctest code in."></textarea>
@@ -43,9 +37,22 @@
         <div class="text-center">
             <button onclick="verwerk()">GO</button>
             <button onclick="reset()">CLEAR</button>
-
+            <button onclick="mini()">MINIFY</button>
         </div>
     </div>
+</div>
+<div class="container">
+    <h1>JS-Tester</h1>
+    <p>Deze - hoogstwaarschijnlijk met buggevulde - webapplicatie maakt het mogelijk om tijdens het werken met javascript ook tests te kunnen runnen. Dien in bovenstaande textarea je doctest-like tests in. En plak het resultaat in je javascript script. Wij doen de rest voor jou.</p>
+    <p>Wil je alles op 1 lijn - ten koste van de leesbaarheid? Klik dan op de knop 'MINIFY'.</p>
+    <img src="afbeeldingen/functies.png">
+    <p>2 simpele javascript functies.</p>
+    <img src="afbeeldingen/doctest.png">
+    <p>De doctest tests.</p>
+    <img src="afbeeldingen/JSTest.png">
+    <p>De code gegenereerd door deze webaplicatie tests.</p>
+    <img src="afbeeldingen/resultaat.png">
+    <p>Het resultaat na het runnen van de tests.</p>
 </div>
 <div class="container">
     <h3>Voetnoot</h3>
@@ -70,7 +77,7 @@
                     if(nextline.startsWith("AssertionError")){
                         res += `totaal += 1; var check = false; try {\n` + line + `\n} catch(error) { \n if(error.name === "AssertionError") { \n check = true; \n} \n} if(check) {\n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` has CORRECTLY thrown an AssertionError.'); correct += 1; \n} else { \nconsole.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` has NOT CORRECTLY thrown an AssertionError')\n }; \n`;
                     } else {
-                        res += `totaal += 1; if(JSON.stringify(` + line + `) === JSON.stringify(` + nextline + `)) { \n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` did SUCCEED'); correct += 1; \n } else { \n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` did NOT SUCCEED. Expected outcome was: ` + nextline.replace(/(['"])/g,"\\$1") + ` but current outcome is: ' + JSON.stringify(` + line  + `));\n} \n`;
+                        res += `totaal += 1; if(JSON.stringify(` + line + `) === JSON.stringify(` + nextline + `)) { \n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` did SUCCEED'); correct += 1; \n } else { \n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` did NOT SUCCEED.'); console.log('Expected: ` + nextline.replace(/(['"])/g,"\\$1") + `'); console.log('Got: ' + JSON.stringify(` + line  + `));\n} \n`;
                     }
                     index += 1;
                 } else {
@@ -87,6 +94,11 @@
     function reset(){
         $("#inputField").val("");
         $("#outputField").val("");
+    }
+
+    function mini(){
+        let waarde = $("#outputField").val();
+        $("#outputField").val(waarde.replace(/\n/g,""));
     }
 </script>
 </html>

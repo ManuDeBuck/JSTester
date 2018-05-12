@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JSTester</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <style>
+        textarea {
+            width: 100%;
+            height: 500px;
+            font-size: 20px;
+        }
+        button {
+            background-color: blue;
+            color: white;
+            border: 2px solid blue;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Javascript tester</h1>
+    <p>Deze - hoogstwaarschijnlijk buggevulde - webapplicatie maakt het mogelijk om tijdens het werken met javascript toch nog een Python "doctest" gevoel te krijgen. Dien in het inputfield je code zoals hieronder getoond in:</p>
+    <img src="voorbeeld.png"><p>Bron: dodona, Universiteit Gent, vak: Scriptingtalen, Prof. Dr. Peter Dawyndt</p>
+    <p>Klik vervolgens op de knop: GO, en copy-paste de resulterende code in je javascript code. Testen maar!</p>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <textarea id="inputField"></textarea>
+        </div>
+        <div class="col-sm-12">
+            <textarea id="outputField"></textarea>
+        </div>
+        <div class="text-center">
+            <button onclick="verwerk()">GO</button>
+            <button onclick="reset()">CLEAR</button>
+
+        </div>
+    </div>
+</div>
+<div class="container">
+    <h3>Voetnoot</h3>
+    <p>De huidige versie ondersteunt ook het opgooien en controlen van AssertionErrors, het uitvoeren van eenvoudige functies en het vergelijken met het gewenste resultaat.</p>
+    <p>&copy; Manu De Buck</p>
+</div>
+</body>
+<script>
+    function verwerk(){
+        let res = '';
+        res += "var correct = 0; var totaal = 0;";
+        let lines = $("#inputField").val().split("\n");
+        let index = 0;
+        while(index < lines.length){
+            let line = lines[index];
+            if(line.startsWith(">>")){
+                line = line.replace(/>+/,"").replace(";","").trim();
+                if(line.indexOf("=") < 0){
+                    let nextline = lines[index + 1].trim();
+                    res += `console.log('---------- JS TEST -----------');`;
+                    if(nextline.startsWith("AssertionError")){
+                        res += `totaal += 1; var check = false; try {\n` + line + `\n} catch(error) { \n if(error.name === "AssertionError") { \n check = true; \n} \n}; if(check) {\n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` has CORRECTLY thrown an AssertionError.'); correct += 1; \n} else { \nconsole.log('The command \` + line.replace(/(['"])/g,"\\\\$1") + \` has NOT CORRECTLY thrown an AssertionError')\n }; \n`;
+                    } else {
+                        res += `totaal += 1; if(JSON.stringify(` + line + `) === JSON.stringify(` + nextline + `)) { \n console.log('The command` + line.replace(/(['"])/g,"\\$1") + ` did SUCCEED'); correct += 1; \n } else { \n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` did NOT SUCCEED. Expected outcome was: ` + nextline.replace(/(['"])/g,"\\$1") + ` but current outcome is: ' + JSON.stringify(` + line  + `));\n} \n`;
+                    }
+                    index += 1;
+                } else {
+                    res += line + ";\n";
+                }
+            }
+            index += 1;
+        }
+        res += `console.log('---------- TOTAL -----------');`;
+        res += "console.log(correct + ' of ' + totaal ' tests succeeded.');";
+        $("#outputField").val(res);
+    }
+
+    function reset(){
+        $("#inputField").val("");
+        $("#outputField").val("");
+    }
+</script>
+</html>

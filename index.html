@@ -77,7 +77,7 @@
                     if(nextline.startsWith("AssertionError")){
                         res += `totaal += 1; var check = false; try {\n` + line + `\n} catch(error) { \n if(error.name === "AssertionError") { \n check = true; \n} \n} if(check) {\n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` has CORRECTLY thrown an AssertionError.'); correct += 1; \n} else { \nconsole.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` has NOT CORRECTLY thrown an AssertionError')\n }; \n`;
                     } else {
-                        res += `totaal += 1; if(JSON.stringify(` + line + `) === JSON.stringify(` + nextline + `)) { \n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` did SUCCEED'); correct += 1; \n } else { \n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` did NOT SUCCEED.'); console.log('Expected: ` + nextline.replace(/(['"])/g,"\\$1") + `'); console.log('Got: ' + JSON.stringify(` + line  + `));\n} \n`;
+                        res += `totaal += 1; if(JSON.stringify(` + line + `) === JSON.stringify(` + nextline + `)) { \n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` did SUCCEED'); correct += 1; \n } else { \n console.log('The command ` + line.replace(/(['"])/g,"\\$1") + ` did NOT SUCCEED'); console.log('Expected: ` + nextline.replace(/(['"])/g,"\\$1") + `'); console.log('Got: ' + JSON.stringify(` + line  + `));\n} \n`;
                     }
                     index += 1;
                 } else {

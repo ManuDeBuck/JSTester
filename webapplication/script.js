@@ -15,7 +15,7 @@ function verwerk(){
                     if (nextline.startsWith("AssertionError")) {
                         res += `totaal += 1;\n var check = false; try {\n` + line + `\n} catch(error) { \n check = true; \n} \n if(check) {\n console.log('The command ` + line.replace(/(['"])/g, "\\$1") + ` has CORRECTLY thrown an error.'); correct += 1; \n} else { \nconsole.log('The command ` + line.replace(/(['"])/g, "\\$1") + ` has NOT CORRECTLY thrown an AssertionError')\n }; \n`;
                     } else {
-                        res += `totaal += 1;\n try {\n if(deepCompare(` + line + `,` + nextline + `)) { \n console.log('The command ` + line.replace(/(['"])/g, "\\$1") + ` did SUCCEED'); correct += 1; \n } else { \n console.log('The command ` + line.replace(/(['"])/g, "\\$1") + ` did NOT SUCCEED'); console.log('Expected: ` + nextline.replace(/(['"])/g, "\\$1") + `'); console.log('Got: ' + JSON.stringify(` + line + `));\n} \n} catch(error) { \nconsole.log('---------- FOUT ----------');\n console.log('Er werd een error opgegooid tijdens het uitvoeren: ' + error); \n} \n`;
+                        res += `totaal += 1;\n try { if(deepCompare(` + line + `,` + nextline + `)) { \n console.log('The command ` + line.replace(/(['"])/g, "\\$1") + ` did SUCCEED'); correct += 1; \n } else { \n console.log('The command ` + line.replace(/(['"])/g, "\\$1") + ` did NOT SUCCEED'); console.log('Expected: ` + nextline.replace(/(['"])/g, "\\$1") + `'); console.log('Got: ' + JSON.stringify(` + line + `));\n} } catch(error) { console.log('De methode: ` + line.replace(/(['"])/g, "\\$1") + ` bestaat niet.');\n}`;
                     }
                     index += 1;
                 } else {

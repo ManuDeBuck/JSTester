@@ -1,10 +1,28 @@
-# JSTester(s)
-Small application that enables doctest-like testing for javascript.
+# JSTester
 
-### Collaborators
+## Web application
+
+Small webapplication that enables to generate a script for doctest-like testing for javascript
+
+### Contributors
 * [Manu De Buck](https://github.com/ManuDeBuck)
-* [Robin De Baets](https://github.com/RobinDeBaets)
 
-### Currently
-There are currently 2 options. You can use the very simple webapplication [Link to application](http://users.ugent.be/~madbuck/JSTester/webapplication) or you can use the in-code doctest code.
- 
+## Javascript script
+
+Javascript script to test doctests (considering errors, classes, code flow)
+
+Usage:
+
+Your code should look like this:
+* The code itself
+* The doctests, in the format as shown below (the quotes are important)
+* The doctest.txt script 
+
+Example code:
+![code](https://i.imgur.com/LZI5r66.png)
+Example output:
+![output](https://i.imgur.com/20TYQs6.png)
+
+
+### Contributors
+* [Robin De Baets](https://github.com/RobinDeBaets)

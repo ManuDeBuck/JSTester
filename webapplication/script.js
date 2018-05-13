@@ -22,11 +22,7 @@ function verwerk(){
                     res += line + ";\n";
                 }
             } else {
-                res += `console.log('---------- JS TEST -----------');\n`;
-                res += `var failed = false;\n`;
-                res += `try { \n` + line + `\n} catch(error) { \n failed = true \n}\n`;
-                res += `if(failed) { console.log('Impossible to create: ` + line.replace(/(['"])/g, "\\$1") + `'); } else { console.log('Creation of: ` + line.replace(/(['"])/g, "\\$1") + ` succeeded.'); } `;
-
+                res += line + `;\n`;
             }
         }
         index += 1;

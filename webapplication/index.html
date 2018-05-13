@@ -68,7 +68,7 @@
     <p>Find on github: <a href="https://github.com/ManuDeBuck/JSTester">GitHub</a></p>
 </div>
 <script>
-    fetch('version.txt').then(response => response.text()).then(text => {$("#currentVersion").text(text);});
+    fetch('version.txt').then(response => response.text()).then(text => {$("#currentVersion").text("Version: " + text);});
 </script>
 <script src="script.js"></script>
 </body>

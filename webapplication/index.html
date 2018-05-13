@@ -64,8 +64,12 @@
     <h3>Voetnoot</h3>
     <p>De huidige versie ondersteunt het opgooien en controlen van Errors, het uitvoeren van eenvoudige functies en het vergelijken met het gewenste resultaat.</p>
     <p>&copy; Manu De Buck</p>
+    <p id="currentVersion"></p>
     <p>Find on github: <a href="https://github.com/ManuDeBuck/JSTester">GitHub</a></p>
 </div>
+<script>
+    fetch('version.txt').then(response => response.text()).then(text => {$("#currentVersion").text(text);});
+</script>
 <script src="script.js"></script>
 </body>
 </html>

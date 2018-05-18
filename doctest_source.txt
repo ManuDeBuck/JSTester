@@ -1,3 +1,42 @@
+class A {
+    b() {
+        return ["multi", "line", "test"].join("\n");
+    }
+    c() {
+        throw new AssertionError("test");
+    }
+    d() {
+        return "123";
+    }
+}
+class AssertionError extends Error {
+
+    constructor(message) {
+        super(message);
+        this.name = "AssertionError";
+        this.message = message;
+
+    }
+
+}
+
+
+`"""
+>> const a = new A();
+>> a.c();
+AssertionError: test
+>> a.b();
+multi
+line
+test
+>> console.log(a.d());
+"123"
+>> let q = b => b;
+>> console.log(q("c\nd"));
+c
+d
+"""`;
+
 function deepCompare () {
     var i, l, leftChain, rightChain;
 
@@ -118,10 +157,16 @@ var lineReader = require("readline").createInterface({
 });
 let lines = [];
 let testing = false;
-function test(code, output) {
+function test(code, output, last) {
     let expected;
     let actual;
     let error = false;
+    let correctLines = 0;
+    console.oldLog = console.log;
+    console.log = function(value) {
+        console.oldLog(value);
+        return value;
+    };
     try {
         actual = eval(code.join("\n"));
         try {
@@ -133,9 +178,20 @@ function test(code, output) {
         actual = `${err.name}: ${err.message}`;
         expected = output.join("\n");
         error = true;
+        for(let x = last + 1; x < code.length; x += 1) {
+            try {
+                eval(code.slice(0, x))
+                correctLines += 1;
+            } catch(err) {
+                break;
+            }
+        }
     }
+    console.log = console.oldLog;
+    console.oldLog = undefined;
     let correct = deepCompare(actual, expected);
-    return [error, correct, expected, actual];
+    // Whether there's an error, whether is was correct, expected, actual, correct lines in case of error
+    return [error, correct, expected, actual, correctLines];
 }
 lineReader.on("line", function(line) {
     if(/`"""/.test(line) && lines.length === 0) {
@@ -144,7 +200,13 @@ lineReader.on("line", function(line) {
     } else if(/"""`/.test(line)) {
         testing = false;
     }
-    if(testing) lines.push(line);
+    if(testing) {
+        if(lines.length !== 0 && !/^>>>? .*$/.test(line) && !/^>>>? .*$/.test(lines[lines.length - 1])) {
+            lines[lines.length - 1] += "\n" + line;
+        } else {
+            lines.push(line);
+        }
+    }
 }).on("close", function() {
     let code = [];
     let output = [];
@@ -158,7 +220,7 @@ lineReader.on("line", function(line) {
         } else {
             if(line.length !== 0) output.push(line);
             if(output.length !== 0) {
-                let t = test(code, output);
+                let t = test(code, output, last);
                 if(t[1]) {
                     correct += 1;
                 } else {
@@ -166,16 +228,16 @@ lineReader.on("line", function(line) {
                         `Trying:
 ${code.slice(last, code.length).map(a => `\t${a}`).join("\n")}
 Expecting: 
-    ${JSON.stringify(t[2])}
+    ${JSON.stringify(t[2]).replace(/\\n/g, "\n\t")}
 Actual:  
-    ${JSON.stringify(t[3])}`);
+    ${JSON.stringify(t[3]).replace(/\\n/g, "\n\t")}`);
                     console.log(Array(100).join("-"));
                     failed += 1;
                 }
                 if(!t[0]) {
                     last = code.length;
                 } else {
-                    code = code.slice(0, last)
+                    code = code.slice(0, last + t[4])
                 }
                 output = [];
             }

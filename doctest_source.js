@@ -200,7 +200,7 @@ lineReader.on("line", function(line) {
     } else if(/"""`/.test(line)) {
         testing = false;
     }
-    if(testing) {
+    if(testing && line.trim().length !== 0) {
         if(lines.length !== 0 && !/^>>>? .*$/.test(line) && !/^>>>? .*$/.test(lines[lines.length - 1])) {
             lines[lines.length - 1] += "\n" + line;
         } else {
@@ -251,5 +251,3 @@ Actual:
         ${failed} items failed`
     );
 });
-
-

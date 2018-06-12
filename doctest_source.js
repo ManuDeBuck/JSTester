@@ -22,6 +22,8 @@ class AssertionError extends Error {
 
 
 `"""
+>> 5
+5
 >> const a = new A();
 >> a.c();
 AssertionError: test
@@ -35,206 +37,200 @@ test
 >> console.log(q("c\nd"));
 c
 d
+>> undefined
+undefined
+>> var z = "123456";
+"123456"
+>> z = "789"
+"789"
+>> q = "qwerty";
+"qwertyz"
 """`;
 
-function deepCompare () {
-    var i, l, leftChain, rightChain;
+function isEqual(value, other) {
+    if (value === other) return true;
+    // Get the value type
+    var type = Object.prototype.toString.call(value);
+    // If the two objects are not the same type, return false
+    if (type !== Object.prototype.toString.call(other)) return false;
 
-    function compare2Objects (x, y) {
-        var p;
+    // If items are not an object or array, return false
+    if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false;
+    // Compare the length of the length of the two items
+    var valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
+    var otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
+    if (valueLen !== otherLen) return false;
 
-        // remember that NaN === NaN returns false
-        // and isNaN(undefined) returns true
-        if (isNaN(x) && isNaN(y) && typeof x === 'number' && typeof y === 'number') {
-            return true;
+    // Compare two items
+    var compare = function (item1, item2) {
+
+        // Get the object type
+        var itemType = Object.prototype.toString.call(item1);
+
+        // If an object or array, compare recursively
+        if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
+            if (!isEqual(item1, item2)) return false;
         }
 
-        // Compare primitives and functions.
-        // Check if both arguments link to the same object.
-        // Especially useful on the step where we compare prototypes
-        if (x === y) {
-            return true;
-        }
+        // Otherwise, do a simple comparison
+        else {
 
-        // Works in case when functions are created in constructor.
-        // Comparing dates is a common scenario. Another built-ins?
-        // We can even handle functions passed across iframes
-        if ((typeof x === 'function' && typeof y === 'function') ||
-            (x instanceof Date && y instanceof Date) ||
-            (x instanceof RegExp && y instanceof RegExp) ||
-            (x instanceof String && y instanceof String) ||
-            (x instanceof Number && y instanceof Number)) {
-            return x.toString() === y.toString();
-        }
+            // If the two items are not the same type, return false
+            if (itemType !== Object.prototype.toString.call(item2)) return false;
 
-        // At last checking prototypes as good as we can
-        if (!(x instanceof Object && y instanceof Object)) {
-            return false;
-        }
-
-        if (x.isPrototypeOf(y) || y.isPrototypeOf(x)) {
-            return false;
-        }
-
-        if (x.constructor !== y.constructor) {
-            return false;
-        }
-
-        if (x.prototype !== y.prototype) {
-            return false;
-        }
-
-        // Check for infinitive linking loops
-        if (leftChain.indexOf(x) > -1 || rightChain.indexOf(y) > -1) {
-            return false;
-        }
-
-        // Quick checking of one object being a subset of another.
-        // todo: cache the structure of arguments[0] for performance
-        for (p in y) {
-            if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
-                return false;
-            }
-            else if (typeof y[p] !== typeof x[p]) {
-                return false;
-            }
-        }
-
-        for (p in x) {
-            if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
-                return false;
-            }
-            else if (typeof y[p] !== typeof x[p]) {
-                return false;
+            // Else if it's a function, convert to a string and compare
+            // Otherwise, just compare
+            if (itemType === '[object Function]') {
+                if (item1.toString() !== item2.toString()) return false;
+            } else {
+                if (item1 !== item2) return false;
             }
 
-            switch (typeof (x[p])) {
-                case 'object':
-                case 'function':
-
-                    leftChain.push(x);
-                    rightChain.push(y);
-
-                    if (!compare2Objects (x[p], y[p])) {
-                        return false;
-                    }
-
-                    leftChain.pop();
-                    rightChain.pop();
-                    break;
-
-                default:
-                    if (x[p] !== y[p]) {
-                        return false;
-                    }
-                    break;
-            }
         }
+    };
 
-        return true;
-    }
-
-    if (arguments.length < 1) {
-        return true; //Die silently? Don't know how to handle such case, please help...
-        // throw "Need two or more arguments to compare";
-    }
-
-    for (i = 1, l = arguments.length; i < l; i++) {
-
-        leftChain = []; //Todo: this can be cached
-        rightChain = [];
-
-        if (!compare2Objects(arguments[0], arguments[i])) {
-            return false;
+    // Compare properties
+    if (type === '[object Array]') {
+        for (var i = 0; i < valueLen; i++) {
+            if (compare(value[i], other[i]) === false) return false;
+        }
+    } else {
+        for (var key in value) {
+            if (value.hasOwnProperty(key)) {
+                if (compare(value[key], other[key]) === false) return false;
+            }
         }
     }
 
+    // If nothing failed, return true
     return true;
-}
+
+};
 
 var lineReader = require("readline").createInterface({
     input: require("fs").createReadStream(__filename)
 });
+let definitions = ["const", "let", "var"];
+
+function strike(text) {
+    let result = '';
+    for (let c of text.split("")) {
+        result = result + c + '\u0336';
+    }
+    return result;
+}
+
 let lines = [];
 let testing = false;
+
 function test(code, output, last) {
     let expected;
     let actual;
     let error = false;
     let correctLines = 0;
     console.oldLog = console.log;
-    console.log = function(value) {
+    console.log = function (value) {
         console.oldLog(value);
         return value;
     };
     try {
         actual = eval(code.join("\n"));
+        if (actual === undefined || definitions.some(s => code[code.length - 1].startsWith(s + " "))) {
+            for (let x = code.length - 1; 0 <= x; x--) {
+                let line = code[x];
+                if (line.indexOf("=") !== -1) {
+                    for (let definition of definitions) {
+                        if (line.startsWith(definition + " ")) {
+                            if (!line.endsWith(";")) line += ";";
+                            line += "\n   " + line.split("=")[0].replace(definition, "").trimRight() + ";";
+                            code[x] = line;
+                            let result = eval(code.join("\n"));
+                            if (result !== undefined) {
+                                actual = result;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         try {
             expected = eval('(' + output.join("\n") + ')');
-        } catch(err) {
+        } catch (err) {
             expected = output.join("\n")
         }
     } catch (err) {
         actual = `${err.name}: ${err.message}`;
         expected = output.join("\n");
         error = true;
-        for(let x = last + 1; x < code.length; x += 1) {
+        for (let x = last + 1; x < code.length; x += 1) {
             try {
-                eval(code.slice(0, x))
+                eval(code.slice(0, x));
                 correctLines += 1;
-            } catch(err) {
+            } catch (err) {
                 break;
             }
         }
     }
     console.log = console.oldLog;
     console.oldLog = undefined;
-    let correct = deepCompare(actual, expected);
+    let correct = isEqual(actual, expected);
     // Whether there's an error, whether is was correct, expected, actual, correct lines in case of error
     return [error, correct, expected, actual, correctLines];
 }
-lineReader.on("line", function(line) {
-    if(/`"""/.test(line) && lines.length === 0) {
+
+function itemsFormat(i) {
+    return i === 1 ? "item" : "items";
+}
+
+lineReader.on("line", function (line) {
+    if (/`"""/.test(line) && lines.length === 0) {
         testing = true;
         return;
-    } else if(/"""`/.test(line)) {
+    } else if (/"""`/.test(line)) {
         testing = false;
     }
-    if(testing && line.trim().length !== 0) {
-        if(lines.length !== 0 && !/^>>>? .*$/.test(line) && !/^>>>? .*$/.test(lines[lines.length - 1])) {
+    if (testing && line.trim().length !== 0) {
+        if (lines.length !== 0 && !/^>>>? .*$/.test(line) && !/^>>>? .*$/.test(lines[lines.length - 1])) {
             lines[lines.length - 1] += "\n" + line;
         } else {
             lines.push(line);
         }
     }
-}).on("close", function() {
+}).on("close", function () {
     let code = [];
     let output = [];
     let failed = 0;
     let correct = 0;
     let last = 0;
-    for(let x = 0; x < lines.length; x +=1) {
+    for (let x = 0; x < lines.length; x += 1) {
         let line = lines[x];
-        if(/^>>>? .*$/.test(line)) {
-            code.push(line.substring(line.indexOf(" ")))
+        if (/^>>>? .*$/.test(line)) {
+            code.push(line.substring(line.indexOf(" ") + 1).trim())
         } else {
-            if(line.length !== 0) output.push(line);
-            if(output.length !== 0) {
+            if (line.length !== 0) output.push(line);
+            if (output.length !== 0) {
                 let t = test(code, output, last);
-                if(t[1]) {
+                if (t[1]) {
                     correct += 1;
                 } else {
+                    let trying = '\x1b[91m' + "Trying" + '\x1b[0m';
+                    let expecting = '\x1b[93m' + "Expecting" + '\x1b[0m';
+                    let actual = '\x1b[92m' + "Actual" + '\x1b[0m';
+                    let tryingCode = '\x1b[94m' + code.slice(last, code.length).map(a => `\t${a}`).join("\n") + '\x1b[0m';
+                    let expectingResult = '\x1b[94m' + (t[2] === undefined ? undefined : JSON.stringify(t[2]).replace(/\\n/g, "\n\t")) + '\x1b[0m';
+                    let actualResult = '\x1b[94m' + (t[3] === undefined ? undefined : JSON.stringify(t[3]).replace(/\\n/g, "\n\t")) + '\x1b[0m';
                     console.log(
-                        `Trying:
-${code.slice(last, code.length).map(a => `\t${a}`).join("\n")}
-Expecting: 
-    ${JSON.stringify(t[2]).replace(/\\n/g, "\n\t")}
-Actual:  
-    ${JSON.stringify(t[3]).replace(/\\n/g, "\n\t")}`);
-                    console.log(Array(100).join("-"));
+                        `${trying}:
+${tryingCode}
+${expecting}: 
+    ${expectingResult}
+${actual}:  
+    ${actualResult}`);
+                    console.log(strike(Array(80).join("-")));
                     failed += 1;
                 }
-                if(!t[0]) {
+                if (!t[0]) {
                     last = code.length;
                 } else {
                     code = code.slice(0, last + t[4])
@@ -243,11 +239,20 @@ Actual:
             }
         }
     }
-    if(output.length !== 0) {
+    if (output.length !== 0) {
         test(code, output);
     }
-    console.log(`${correct + failed} items:
-        ${correct} items correct
-        ${failed} items failed`
-    );
+    if (failed === 0) {
+        console.log("All items are correct " + '\x1b[92m' + "😎" + '\x1b[0m');
+    } else if (correct === 0) {
+        console.log("All items are incorrect " + '\x1b[91m' + "☠" + '\x1b[0m');
+    } else {
+        let items = '\x1b[95m' + (correct + failed) + " " + itemsFormat(correct + failed) + '\x1b[0m';
+        let correctItems = '\x1b[92m' + correct + " " + itemsFormat(correct) + " correct ✓" + '\x1b[0m';
+        let failedItems = '\x1b[91m' + failed + " " + itemsFormat(failed) + " failed ✕" + '\x1b[0m';
+        console.log(`${items}
+    ${correctItems}
+    ${failedItems}`
+        );
+    }
 });

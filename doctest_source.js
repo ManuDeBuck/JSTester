@@ -1,52 +1,3 @@
-class A {
-    b() {
-        return ["multi", "line", "test"].join("\n");
-    }
-    c() {
-        throw new AssertionError("test");
-    }
-    d() {
-        return "123";
-    }
-}
-class AssertionError extends Error {
-
-    constructor(message) {
-        super(message);
-        this.name = "AssertionError";
-        this.message = message;
-
-    }
-
-}
-
-
-`"""
->> 5
-5
->> const a = new A();
->> a.c();
-AssertionError: test
->> a.b();
-multi
-line
-test
->> console.log(a.d());
-"123"
->> let q = b => b;
->> console.log(q("c\nd"));
-c
-d
->> undefined
-undefined
->> var z = "123456";
-"123456"
->> z = "789"
-"789"
->> q = "qwerty";
-"qwertyz"
-"""`;
-
 function isEqual(value, other) {
     if (value === other) return true;
     // Get the value type
@@ -203,6 +154,7 @@ lineReader.on("line", function (line) {
     let failed = 0;
     let correct = 0;
     let last = 0;
+    let previousCorrect = false;
     for (let x = 0; x < lines.length; x += 1) {
         let line = lines[x];
         if (/^>>>? .*$/.test(line)) {
@@ -213,7 +165,13 @@ lineReader.on("line", function (line) {
                 let t = test(code, output, last);
                 if (t[1]) {
                     correct += 1;
+                    console.log('\x1b[92m' + "✓ " + '\x1b[0m' + '\x1b[94m' + code[code.length - 1] + '\x1b[0m');
+                    previousCorrect = true;
                 } else {
+                    if(previousCorrect) {
+                        console.log(strike(Array(80).join("-")));
+                        previousCorrect = false;
+                    }
                     let trying = '\x1b[91m' + "Trying" + '\x1b[0m';
                     let expecting = '\x1b[93m' + "Expecting" + '\x1b[0m';
                     let actual = '\x1b[92m' + "Actual" + '\x1b[0m';

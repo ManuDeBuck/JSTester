@@ -1,3 +1,52 @@
+class A {
+    b() {
+        return ["multi", "line", "test"].join("\n");
+    }
+    c() {
+        throw new AssertionError("test");
+    }
+    d() {
+        return "123";
+    }
+}
+class AssertionError extends Error {
+
+    constructor(message) {
+        super(message);
+        this.name = "AssertionError";
+        this.message = message;
+
+    }
+
+}
+
+
+`"""
+>> 5
+5
+>> const a = new A();
+>> a.c();
+AssertionError: test
+>> a.b();
+multi
+line
+test
+>> console.log(a.d());
+"123"
+>> let q = b => b;
+>> console.log(q("c\nd"));
+c
+d
+>> undefined
+undefined
+>> var z = "123456";
+"123456"
+>> z = "789"
+"789"
+>> q = "qwerty";
+"qwertyz"
+"""`;
+
 if (typeof __filename !== 'undefined') {
     function isCodeLine(line) {
         return /^\.(\.)+ .*$/.test(line) ||
@@ -184,13 +233,12 @@ if (typeof __filename !== 'undefined') {
                         let tryingCode = '\x1b[94m' + code.slice(last, code.length).map(a => `\t${a}`).join("\n") + '\x1b[0m';
                         let expectingResult = '\x1b[94m' + (t[2] === undefined ? undefined : JSON.stringify(t[2]).replace(/\\n/g, "\n\t")) + '\x1b[0m';
                         let actualResult = '\x1b[94m' + (t[3] === undefined ? undefined : JSON.stringify(t[3]).replace(/\\n/g, "\n\t")) + '\x1b[0m';
-                        console.log(
-                            `${trying}:
-    ${tryingCode}
-    ${expecting}: 
-        ${expectingResult}
-    ${actual}:  
-        ${actualResult}`);
+                        console.log(`${trying}:
+${tryingCode}
+${expecting}: 
+    ${expectingResult}
+${actual}:  
+    ${actualResult}`);
                         console.log(strike(Array(80).join("-")));
                         failed += 1;
                     }
